@@ -1,0 +1,26 @@
+# Allowlist policy: ignore everything at the repository root, then re-include
+# only the files that belong in the public code/data archive. This keeps the
+# unpublished manuscript, the copyrighted journal guideline PDFs, personal
+# files, backups and editor state out of the repository by default.
+/*
+
+# --- re-included: the reproducible analysis archive ---
+!/R/
+!/results/
+!/figures/
+!/LICENSE
+!/README.md
+!/CITATION.cff
+!/renv.lock
+!/.gitignore
+!/.zenodo.json
+
+# --- never track, even inside re-included directories ---
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+.Renviron
+Thumbs.db
+.DS_Store
+__MACOSX/

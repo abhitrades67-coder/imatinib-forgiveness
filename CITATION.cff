@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this software or the archived result datasets, please cite the deposit below."
+title: "Metabolite-aware pharmacokinetic forgiveness analysis of imatinib in chronic myeloid leukemia: analysis code and simulated result datasets"
+version: 1.0.0
+license: MIT
+type: software
+year: 2026
+# Author names are given in the same form as reference [23] of the accompanying
+# article. Update the Zenodo record's creator metadata to match this file.
+authors:
+  - given-names: "Abhishek"
+    family-names: "Anil"
+    orcid: "https://orcid.org/0000-0001-7289-2325"
+    affiliation: "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India"
+  - given-names: "S."
+    family-names: "Aswini"
+    orcid: "https://orcid.org/0000-0001-6680-0762"
+    affiliation: "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Jodhpur, India"
+  - given-names: "A. S."
+    family-names: "Archana"
+    orcid: "https://orcid.org/0009-0007-5749-5939"
+    affiliation: "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India"
+  - given-names: "Debasish"
+    family-names: "Hota"
+    orcid: "https://orcid.org/0000-0002-7339-1773"
+    affiliation: "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India"
+  - given-names: "Anand"
+    family-names: "Srinivasan"
+    orcid: "https://orcid.org/0000-0002-0663-0922"
+    affiliation: "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India"
+abstract: >-
+  Analysis code and generated result datasets for a metabolite-aware
+  pharmacokinetic simulation of missed imatinib doses in chronic myeloid
+  leukemia. A two-compartment parent model coupled to a long-lived active
+  metabolite (N-desmethyl-imatinib, CGP74588) is used to test whether the
+  metabolite increases imatinib's forgiveness of missed doses at 400 and
+  600 mg once daily. Running Rscript R/run_all.R regenerates every reported
+  value and figure.
+keywords:
+  - imatinib
+  - CGP74588
+  - pharmacokinetic forgiveness
+  - medication adherence
+  - chronic myeloid leukemia
+  - therapeutic drug monitoring

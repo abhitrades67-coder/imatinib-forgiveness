@@ -1,0 +1,8 @@
+"Metric","Simulated","Published_reference","Predicted_600mg"
+"SS trough imatinib, mean (CV%) (ng/mL)","1193 (50%)","published population means 979-1452 (Larson 2008 IRIS; Picard 2007)","1789 (50%)"
+"SS trough CGP74588, mean (CV%) (ng/mL)","272 (49%)","242 (44%) (Larson 2008)","408 (49%)"
+"Cmax (ng/mL), median [IQR]","2267 [1905-2787]","1920-2040 (le Coutre 2004; Egorin 2009)","3401 [2857-4181]"
+"Tmax (h), median [IQR]","3.0 [2.5-3.8]","2-4 (Gleevec label)","3.0 [2.5-3.8]"
+"AUC0-24 parent (ug.h/mL), median [IQR]","39.9 [31.3-50.5]","34-40 (Egorin 2009; le Coutre 2004)","59.8 [46.9-75.8]"
+"Terminal half-life parent (h), median [IQR]","19.5 [15.2-24.3]","18.2 (le Coutre 2004; ~18 h consensus)","19.5 [15.2-24.3]"
+"Metabolite:parent AUC ratio, median [IQR]","0.15 [0.12-0.18]","~0.15 (Gleevec label; Larson 2008 trough ratio ~0.25)","0.15 [0.12-0.18]"

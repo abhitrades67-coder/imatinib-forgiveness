@@ -1,0 +1,44 @@
+{
+  "title": "Metabolite-aware pharmacokinetic forgiveness analysis of imatinib in chronic myeloid leukemia: analysis code and simulated result datasets",
+  "description": "<p>Analysis code and generated result datasets for a metabolite-aware pharmacokinetic simulation of missed imatinib doses in chronic myeloid leukemia. A two-compartment parent model coupled to a long-lived active metabolite (N-desmethyl-imatinib, CGP74588) is used to test whether the metabolite increases imatinib's forgiveness of missed doses at 400 and 600 mg once daily.</p><p>The analysis is fully deterministic under a fixed random seed (20260606): <code>Rscript R/run_all.R</code> regenerates every reported value, every figure and the journal artwork byte-for-byte.</p>",
+  "upload_type": "software",
+  "license": "mit",
+  "version": "1.0.0",
+  "language": "eng",
+  "keywords": [
+    "imatinib",
+    "CGP74588",
+    "pharmacokinetic forgiveness",
+    "medication adherence",
+    "chronic myeloid leukemia",
+    "therapeutic drug monitoring",
+    "pharmacokinetic simulation"
+  ],
+  "creators": [
+    {
+      "name": "Anil, Abhishek",
+      "affiliation": "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India",
+      "orcid": "0000-0001-7289-2325"
+    },
+    {
+      "name": "Aswini, S.",
+      "affiliation": "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Jodhpur, India",
+      "orcid": "0000-0001-6680-0762"
+    },
+    {
+      "name": "Archana, A. S.",
+      "affiliation": "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India",
+      "orcid": "0009-0007-5749-5939"
+    },
+    {
+      "name": "Hota, Debasish",
+      "affiliation": "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India",
+      "orcid": "0000-0002-7339-1773"
+    },
+    {
+      "name": "Srinivasan, Anand",
+      "affiliation": "Department of Pharmacology, All India Institute of Medical Sciences (AIIMS) Bhubaneswar, India",
+      "orcid": "0000-0002-0663-0922"
+    }
+  ]
+}
