@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21899206.svg)](https://doi.org/10.5281/zenodo.21899206)
 
-**Authors:** Abhishek Anil, Aswini S, Archana A. S., Debasish Hota, Anand Srinivasan
+**Authors:** Abhishek Anil, Aswini Saravanan, Archana A. S., Debasish Hota, Anand Srinivasan
 **Version:** 1.0.0 · **License:** MIT · **Contact:** anandsrinivasan@aiimsbhubaneswar.edu.in
 **Archived release:** [10.5281/zenodo.21899206](https://doi.org/10.5281/zenodo.21899206) (v1.0.0)
 · concept DOI [10.5281/zenodo.21899205](https://doi.org/10.5281/zenodo.21899205) always resolves
