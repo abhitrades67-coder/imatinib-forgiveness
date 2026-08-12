@@ -1,12 +1,17 @@
 # Imatinib metabolite-aware forgiveness analysis (CML)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21899206.svg)](https://doi.org/10.5281/zenodo.21899206)
+
 **Authors:** Abhishek Anil, Aswini S, Archana A. S., Debasish Hota, Anand Srinivasan
 **Version:** 1.0.0 · **License:** MIT · **Contact:** anandsrinivasan@aiimsbhubaneswar.edu.in
+**Archived release:** [10.5281/zenodo.21899206](https://doi.org/10.5281/zenodo.21899206) (v1.0.0)
+· concept DOI [10.5281/zenodo.21899205](https://doi.org/10.5281/zenodo.21899205) always resolves
+to the newest version.
 
 This archive is the analysis code and generated result datasets underlying the article
 *"Does the long-lived active metabolite make imatinib more forgiving? A metabolite-aware
 pharmacokinetic simulation of missed doses in chronic myeloid leukemia."* Please cite the
-deposit via its Zenodo DOI (see `CITATION.cff`).
+deposit via its Zenodo DOI, 10.5281/zenodo.21899206 (see `CITATION.cff`).
 
 A from-scratch, simulation-based pharmacokinetic **forgiveness** analysis of imatinib in chronic
 myeloid leukemia that explicitly models the **long-lived active metabolite N-desmethyl-imatinib

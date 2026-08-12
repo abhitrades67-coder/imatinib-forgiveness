@@ -5,8 +5,10 @@ version: 1.0.0
 license: MIT
 type: software
 year: 2026
+doi: 10.5281/zenodo.21899206
+repository-code: "https://github.com/abhitrades67-coder/imatinib-forgiveness"
 # Author names are given in the same form as reference [23] of the accompanying
-# article. Update the Zenodo record's creator metadata to match this file.
+# article, and match the Zenodo record's creator metadata.
 authors:
   - given-names: "Abhishek"
     family-names: "Anil"
