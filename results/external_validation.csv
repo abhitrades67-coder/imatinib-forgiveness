@@ -1,6 +1,0 @@
-"Metric","Model (400 mg, n=1000)","Independent published value (source)"
-"Median [IQR] parent trough (ng/mL)","1081 [768-1480]","979 mean, CV 54% (IRIS, Larson 2008); 1452 responders (Picard 2007)"
-"% within 860-1500 ng/mL window","43","41.4% (real-world TDM; Huang 2023, n=102)"
-"% >= 1000 ng/mL target","56","-"
-"Median [IQR] CGP74588 trough (ng/mL)","247 [178-328]","242 mean, CV 44% (IRIS, Larson 2008)"
-"Median [IQR] metabolite:parent trough ratio","0.23 [0.18-0.29]","0.25 trough ratio (IRIS, Larson 2008)"

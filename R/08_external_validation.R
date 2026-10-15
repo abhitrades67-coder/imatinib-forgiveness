@@ -1,94 +1,41 @@
 # =============================================================================
 # 08_external_validation.R
-# External validation of the simulated steady-state trough DISTRIBUTION against
-# INDEPENDENT published CML cohorts (beyond the summary-statistic qualification
-# in 05_qualification.R / main-text Table 2). Sources (all values verified):
-#   - IRIS / Larson 2008 (Blood 2008;111:4022-8; doi:10.1182/blood-2007-10-116475):
-#       mean steady-state imatinib trough 979 ng/mL (CV 54%); CGP74588 trough
-#       242 ng/mL (CV 44%); trough metabolite:parent ratio ~0.25.
-#   - Picard 2007 (Blood 2007;109:3496-9; doi:10.1182/blood-2006-07-036012):
-#       responder-subgroup mean trough ~1452 ng/mL.
-#   - Huang 2023 (J Clin Pharmacol 2023;63:1438-47; doi:10.1002/jcph.2329):
-#       real-world CML TDM cohort (n=102); 41.4% of patients within the
-#       recommended 860-1500 ng/mL window.
-# Reads results/qualification_per_subject.csv (produced by 05_qualification.R);
-# NO re-simulation is required. Writes figures/fig13_external_validation.png and
-# results/external_validation.csv.
+# External CONSISTENCY check (not validation of missed-dose trajectories): the
+# simulated steady-state trough distribution, with 26% proportional residual
+# error added so that it is comparable with measured concentrations, against
+# independent published CML cohorts (all values verified in the full texts):
+#   IRIS / Larson 2008 (Blood 111:4022-8): day-29 trough median 879 ng/mL
+#     [IQR 647-1170], n = 351
+#   TOPS / Guilhot 2012 (Haematologica 97:731-8): median Cmin 1200 ng/mL at an
+#     actual 400 mg/day and 1935 ng/mL at 600 mg/day (months 1-12 pooled)
+#   Huang 2023 (J Clin Pharmacol 63:1438-47): 41.4% of a real-world TDM cohort
+#     (n = 102) within 860-1500 ng/mL
+# Reads the per-subject qualification output; writes Fig. S2.
 # =============================================================================
 suppressMessages({library(dplyr); library(ggplot2)})
 
-# Published external comparators (verified; see header for full citations).
-EXT_REF <- list(
-  larson_parent_mean  = 979, larson_parent_cv = 0.54,   # IRIS, Larson 2008
-  larson_met_mean     = 242, larson_met_cv    = 0.44,   # IRIS, Larson 2008
-  larson_trough_ratio = 0.25,                           # IRIS trough ratio
-  picard_responder    = 1452,                           # Picard 2007 responders
-  huang_window        = c(860, 1500),                   # Huang 2023 recommended window
-  huang_pct_in_window = 41.4, huang_n = 102             # Huang 2023 real-world TDM
-)
+EXT_REF <- data.frame(
+  dose = c(400, 400, 600),
+  source = c("IRIS (Larson 2008)", "TOPS (Guilhot 2012)", "TOPS (Guilhot 2012)"),
+  median = c(879, 1200, 1935), q1 = c(647, NA, NA), q3 = c(1170, NA, NA))
 
-external_validation <- function(per, dose = 400) {
-  d   <- per[per$dose_mg == dose, ]
-  thr <- if (exists("EFF")) EFF$thr_parent else 1000
-  w   <- EXT_REF$huang_window
-
-  med_iqr <- function(x) sprintf("%.0f [%.0f-%.0f]", median(x), quantile(x, .25), quantile(x, .75))
-  pct_in  <- 100 * mean(d$trough >= w[1] & d$trough <= w[2])
-  pct_ge  <- 100 * mean(d$trough >= thr)
-  ratio   <- d$troughm / d$trough
-
-  tab <- data.frame(
-    Metric = c("Median [IQR] parent trough (ng/mL)",
-               "% within 860-1500 ng/mL window",
-               sprintf("%% >= %g ng/mL target", thr),
-               "Median [IQR] CGP74588 trough (ng/mL)",
-               "Median [IQR] metabolite:parent trough ratio"),
-    `Model (400 mg, n=1000)` = c(
-      med_iqr(d$trough),
-      sprintf("%.0f", pct_in),
-      sprintf("%.0f", pct_ge),
-      med_iqr(d$troughm),
-      sprintf("%.2f [%.2f-%.2f]", median(ratio), quantile(ratio, .25), quantile(ratio, .75))),
-    `Independent published value (source)` = c(
-      "979 mean, CV 54% (IRIS, Larson 2008); 1452 responders (Picard 2007)",
-      sprintf("%.1f%% (real-world TDM; Huang 2023, n=%d)", EXT_REF$huang_pct_in_window, EXT_REF$huang_n),
-      "-",
-      "242 mean, CV 44% (IRIS, Larson 2008)",
-      sprintf("%.2f trough ratio (IRIS, Larson 2008)", EXT_REF$larson_trough_ratio)),
-    check.names = FALSE)
-  write.csv(tab, file.path(DIRS$results, "external_validation.csv"), row.names = FALSE)
-
-  # ---- figure: simulated 400 mg trough distribution vs published cohorts ----
-  src_lev <- c("Model\n(this study)\nn=1000", "IRIS / Larson\n2008", "Picard 2007\n(responders)")
-  sim <- data.frame(source = factor(src_lev[1], levels = src_lev), trough = d$trough)
-  pts <- data.frame(
-    source = factor(c(src_lev[2], src_lev[3]), levels = src_lev),
-    mean   = c(EXT_REF$larson_parent_mean, EXT_REF$picard_responder),
-    sd     = c(EXT_REF$larson_parent_mean * EXT_REF$larson_parent_cv, NA))
-
-  p <- ggplot() +
-    annotate("rect", xmin = -Inf, xmax = Inf, ymin = w[1], ymax = w[2],
-             fill = "#e8a33d", alpha = 0.18) +
-    geom_hline(yintercept = thr, linetype = "dashed", colour = "grey40") +
-    geom_violin(data = sim, aes(source, trough), fill = "#7fb3d5", colour = NA, alpha = 0.5) +
-    geom_boxplot(data = sim, aes(source, trough), width = 0.15, outlier.size = 0.4) +
-    geom_point(data = pts, aes(source, mean), size = 3, colour = "#1b9e77") +
-    geom_errorbar(data = pts, aes(source, ymin = mean - sd, ymax = mean + sd),
-                  width = 0.12, colour = "#1b9e77", na.rm = TRUE) +
-    coord_cartesian(ylim = c(0, as.numeric(quantile(d$trough, .99)))) +
-    # No in-image title/subtitle: this is a numbered main-text figure, and the
-    # journal requires the caption title to live in the manuscript, not the image.
-    labs(x = NULL, y = "Steady-state parent trough (ng/mL)") +
-    (if (exists("THEME")) THEME else theme_bw(base_size = 12))
-
-  gsave2 <- if (exists("gsave")) gsave else
-    function(p, f, w = 8, h = 5.5) ggsave(file.path(DIRS$figures, f), p, width = w, height = h, dpi = 300)
-  gsave2(p, "fig13_external_validation.png", w = 9, h = 5.5)
-  # Submission-ready TIFF (LZW). This is line/halftone artwork, not a photograph,
-  # so it is exported at 1000 dpi rather than the 300 dpi photograph minimum.
-  ggsave(file.path(DIRS$figures, "fig13_external_validation.tiff"), p,
-         width = 8, height = 5.5, dpi = 1000,
-         device = grDevices::tiff, compression = "lzw", type = "cairo")
-  if (exists("tsave")) tsave(p, "Figure_2.tiff", w = 8, h = 5.5)
-  list(table = tab, figure = p)
+fig_external <- function(per) {
+  d <- per %>% transmute(dose = dose_lab(dose_mg), trough = trough_obs)
+  pts <- EXT_REF %>% mutate(dose = dose_lab(dose),
+                            xpos = ifelse(grepl("IRIS", source), 0.82, 1.18))
+  ggplot(d, aes(x = 1, y = trough)) +
+    annotate("rect", xmin = -Inf, xmax = Inf, ymin = 860, ymax = 1500, fill = "#e8a33d", alpha = 0.15) +
+    geom_hline(yintercept = EFF$thr_parent, linetype = "dashed", colour = "grey40") +
+    geom_violin(fill = "#7fb3d5", colour = NA, alpha = 0.5, width = 0.7) +
+    geom_boxplot(width = 0.12, outlier.size = 0.3) +
+    geom_errorbar(data = pts, aes(x = xpos, ymin = q1, ymax = q3, colour = source),
+                  inherit.aes = FALSE, width = 0.06, na.rm = TRUE) +
+    geom_point(data = pts, aes(x = xpos, y = median, colour = source, shape = source),
+               inherit.aes = FALSE, size = 3) +
+    facet_wrap(~dose) +
+    scale_colour_manual(values = c("IRIS (Larson 2008)" = "#1b9e77", "TOPS (Guilhot 2012)" = "#d95f02")) +
+    scale_shape_manual(values = c("IRIS (Larson 2008)" = 16, "TOPS (Guilhot 2012)" = 17)) +
+    coord_cartesian(ylim = c(0, as.numeric(quantile(per$trough_obs[per$dose_mg == 600], .97)))) +
+    labs(x = NULL, y = "Steady-state parent trough (ng/mL)", colour = NULL, shape = NULL) +
+    THEME + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 }

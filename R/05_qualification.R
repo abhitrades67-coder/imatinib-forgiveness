@@ -1,165 +1,218 @@
 # =============================================================================
 # 05_qualification.R
-# (A5) Model qualification against published exposure metrics + VPC-style data.
-# (B7) Parameter-uncertainty propagation of the headline result.
+# Consistency checks of the assembled framework against published exposure
+# (described as CONSISTENCY CHECKS, not validation of the missed-dose
+# trajectories), run-in adequacy, parameter-uncertainty propagation with sourced
+# RSEs, and the calibration-anchor (exposure-headroom) sensitivity analysis.
 # =============================================================================
-suppressMessages({library(rxode2); library(dplyr)})
+suppressMessages({library(rxode2); library(dplyr); library(data.table)})
 
 # ----------------------------------------------------------------------------
-# A5. Qualify the model: simulate perfect 400 mg dosing to steady state and
-# compare simulated exposure (median [IQR]) against published values.
+# Per-subject steady-state exposure (day 30 interval of uninterrupted dosing).
 # ----------------------------------------------------------------------------
-# Analytic terminal half-life of the two-compartment parent disposition (per
-# subject), so the model's terminal t1/2 can be qualified against the measured
-# value (le Coutre 2004, 18.2 h) rather than left unverified.
-thalf_terminal <- function(cl, vc, vp, q) {
-  k10 <- cl / vc; k12 <- q / vc; k21 <- q / vp
-  b <- k10 + k12 + k21; cc <- k10 * k21
-  beta <- (b - sqrt(b^2 - 4 * cc)) / 2           # smaller (terminal) eigenvalue
-  log(2) / beta
+ss_exposure <- function(pop, dose_mg, model_key = "base") {
+  tau <- SIM$tau
+  ev <- shared_events((0:29) * tau, dose_mg, seq(29 * tau, 30 * tau, by = 0.25))
+  s <- solve_pop(model_key, pop[, MODEL_PARAMS[[model_key]]], ev)[, .(id, time, Cp, Cm)]
+  setkey(s, id, time)
+  per <- s[, .(trough = min(Cp), troughm = Cm[which.min(Cp)], troughm_min = min(Cm),
+               Cmax = max(Cp), Tmax = time[which.max(Cp)] - 29 * tau,
+               AUC24 = sum(diff(time) * (head(Cp, -1) + tail(Cp, -1)) / 2) / 1000,
+               AUCm  = sum(diff(time) * (head(Cm, -1) + tail(Cm, -1)) / 2) / 1000,
+               ratio_3to8h = mean(Cm[time - 29 * tau >= 3 & time - 29 * tau <= 8] /
+                                  Cp[time - 29 * tau >= 3 & time - 29 * tau <= 8])),
+           by = id]
+  per[, `:=`(met_ratio_auc = AUCm / AUC24, trough_ratio = troughm / trough, dose_mg = dose_mg)]
+  per <- merge(per, as.data.table(pop[, c("id", "cl", "vc", "vp", "q")]), by = "id")
+  per[, t12 := thalf_terminal(cl, vc, vp, q)]
+  per[]
 }
 
-# Per-subject steady-state exposure summary at a given dose.
-ss_exposure <- function(pop, dose_mg) {
-  ev <- et(time = (0:29) * SIM$tau, amt = dose_mg, cmt = "depot")
-  ev <- add.sampling(ev, seq(0, 30 * SIM$tau, by = 0.25))
-  sim <- rxSolve(imatinib_model, params = pop[, PARAM_COLS], events = ev,
-                 returnType = "data.frame", cores = 4)
-  names(sim)[names(sim) == "sim.id"] <- "id"
-  ss <- sim[sim$time >= 29 * SIM$tau & sim$time <= 30 * SIM$tau, ]
-  per <- ss %>% group_by(id) %>%
-    summarise(
-      trough  = min(Cp),
-      troughm = min(Cm),
-      Cmax    = max(Cp),
-      Tmax    = time[which.max(Cp)] - 29 * SIM$tau,
-      AUC24   = sum(diff(time) * (head(Cp, -1) + tail(Cp, -1)) / 2) / 1000,
-      AUCm    = sum(diff(time) * (head(Cm, -1) + tail(Cm, -1)) / 2) / 1000,
-      .groups = "drop") %>%
-    mutate(met_ratio = AUCm / AUC24, dose_mg = dose_mg)
-  disp <- pop[, c("id", "cl", "vc", "vp", "q")]
-  per <- merge(per, disp, by = "id")
-  per$t12 <- thalf_terminal(per$cl, per$vc, per$vp, per$q)
-  per
-}
+# Measured-type concentrations: add Schmidli 2005 proportional residual error
+# (26%), log-normal form, with a fixed seed.
+add_residual <- function(x, seed) { set.seed(seed); x * exp(rnorm(length(x), 0, PK$resid_prop)) }
 
-# Qualify the model against published 400 mg exposure; additionally report the
-# model's dose-proportional prediction at the other simulated dose(s). Published
-# reference ranges exist only at 400 mg, so 600 mg is labelled as a prediction.
-qualify_model <- function(pop, ref_dose = 400, pred_doses = setdiff(SIM$doses_mg, 400)) {
-  per_all <- bind_rows(lapply(SIM$doses_mg, function(d) ss_exposure(pop, d)))
-  per <- per_all[per_all$dose_mg == ref_dose, ]
-
-  mcv <- function(x) sprintf("%.0f (%.0f%%)", mean(x), 100*sd(x)/mean(x))   # mean (CV%)
-  q3  <- function(x) sprintf("%.0f [%.0f-%.0f]", median(x), quantile(x, .25), quantile(x, .75))
-  q3r <- function(x) sprintf("%.2f [%.2f-%.2f]", median(x), quantile(x, .25), quantile(x, .75))
-  fmt_col <- function(p) c(mcv(p$trough), mcv(p$troughm), q3(p$Cmax),
-      sprintf("%.1f [%.1f-%.1f]", median(p$Tmax), quantile(p$Tmax,.25), quantile(p$Tmax,.75)),
-      sprintf("%.1f [%.1f-%.1f]", median(p$AUC24), quantile(p$AUC24,.25), quantile(p$AUC24,.75)),
-      sprintf("%.1f [%.1f-%.1f]", median(p$t12), quantile(p$t12,.25), quantile(p$t12,.75)),
-      q3r(p$met_ratio))
+qualify_model <- function(pop) {
+  per <- rbindlist(lapply(SIM$doses_mg, function(d) ss_exposure(pop, d)))
+  per[, trough_obs := add_residual(trough, SIM$seed + 31)]
+  mcv <- function(x) sprintf("%.0f (%.0f%%)", mean(x), 100 * sd(x) / mean(x))
+  q3  <- function(x, f = "%.0f") sprintf(paste0(f, " [", f, "-", f, "]"), median(x), quantile(x, .25), quantile(x, .75))
+  col <- function(p) c(q3(p$trough), q3(p$trough_obs), mcv(p$trough), mcv(p$troughm),
+                       sprintf("%.2f (SD %.2f)", mean(p$trough_ratio), sd(p$trough_ratio)),
+                       q3(p$ratio_3to8h, "%.2f"), q3(p$Cmax), q3(p$Tmax, "%.1f"),
+                       q3(p$AUC24, "%.1f"), q3(p$t12, "%.1f"), q3(p$met_ratio_auc, "%.2f"))
   tab <- data.frame(
-    Metric = c("SS trough imatinib, mean (CV%) (ng/mL)",
-               "SS trough CGP74588, mean (CV%) (ng/mL)",
-               "Cmax (ng/mL), median [IQR]", "Tmax (h), median [IQR]",
-               "AUC0-24 parent (ug.h/mL), median [IQR]",
-               "Terminal half-life parent (h), median [IQR]",
+    Metric = c("Parent trough, median [IQR] (ng/mL)",
+               "Parent trough with 26% residual error, median [IQR] (ng/mL)",
+               "Parent trough, mean (CV%) (ng/mL)",
+               "CGP74588 trough, mean (CV%) (ng/mL)",
+               "Metabolite:parent trough ratio, mean (SD)",
+               "Metabolite:parent ratio 3-8 h post-dose, median [IQR]",
+               "Cmax, median [IQR] (ng/mL)", "Tmax, median [IQR] (h)",
+               "AUC0-24, median [IQR] (ug.h/mL)",
+               "Parent terminal half-life, median [IQR] (h)",
                "Metabolite:parent AUC ratio, median [IQR]"),
-    Simulated = fmt_col(per),
-    Published_reference = c("published population means 979-1452 (Larson 2008 IRIS; Picard 2007)",
-                            "242 (44%) (Larson 2008)",
-                            "1920-2040 (le Coutre 2004; Egorin 2009)",
-                            "2-4 (Gleevec label)",
-                            "34-40 (Egorin 2009; le Coutre 2004)",
-                            "18.2 (le Coutre 2004; ~18 h consensus)",
-                            "~0.15 (Gleevec label; Larson 2008 trough ratio ~0.25)"),
+    Simulated_400mg = col(per[dose_mg == 400]),
+    Published_400mg = c("IRIS: median 879 [647-1170], n = 351 (Larson 2008); TOPS: median 1200 (Guilhot 2012)",
+                        "IRIS: median 879 [647-1170] (measured concentrations)",
+                        "IRIS: mean 979 (CV 54%) (Larson 2008)",
+                        "IRIS: 242 (CV 44%) (Larson 2008)",
+                        "IRIS: 0.27 (SD 0.09) (Larson 2008); TOPS ~0.20-0.25 (Guilhot 2012)",
+                        "0.17 (CV 74%), single samples 3-8 h (le Coutre 2004)",
+                        "1920-2040 (le Coutre 2004; Egorin 2009)",
+                        "2-4 (prescribing information)",
+                        "34-40 (Egorin 2009; le Coutre 2004)",
+                        "18.2 (le Coutre 2004)",
+                        "~0.15 (prescribing information)"),
+    Simulated_600mg = col(per[dose_mg == 600]),
+    Published_600mg = c("TOPS: median 1935 at an actual 600 mg/day (Guilhot 2012)",
+                        "TOPS: median 1935 (measured concentrations)",
+                        "-", "-", "TOPS: ~0.20-0.25 at all doses (Guilhot 2012)",
+                        "-", "-", "-", "-", "-", "-"),
     check.names = FALSE)
-  for (d in pred_doses)
-    tab[[sprintf("Predicted_%dmg", d)]] <- fmt_col(per_all[per_all$dose_mg == d, ])
-
   write.csv(tab, file.path(DIRS$results, "model_qualification.csv"), row.names = FALSE)
-  write.csv(per_all, file.path(DIRS$results, "qualification_per_subject.csv"), row.names = FALSE)
-  list(table = tab, per = per_all)
+  write.csv(per, file.path(DIRS$results, "qualification_per_subject.csv"), row.names = FALSE)
+  list(table = tab, per = per)
+}
+
+# External consistency checks against independent published values.
+external_checks <- function(per, typ_trough) {
+  p4 <- per[dose_mg == 400]; p6 <- per[dose_mg == 600]
+  w <- c(860, 1500)
+  tab <- data.frame(
+    Check = c("Median [IQR] parent trough, 400 mg, with residual error (ng/mL)",
+              "Median parent trough, 600 mg, with residual error (ng/mL)",
+              "Patients below 1000 ng/mL on 400 mg (%)",
+              "Patients within 860-1500 ng/mL on 400 mg (%)",
+              "Typical-patient parent trough, 400 mg (ng/mL)",
+              "Metabolite:parent trough ratio, 400 mg, mean (SD)",
+              "Metabolite:parent ratio 3-8 h post-dose, 400 mg, median",
+              "Spearman correlation, steady-state trough vs AUC0-24 (400 mg)"),
+    Model = c(sprintf("%.0f [%.0f-%.0f]", median(p4$trough_obs), quantile(p4$trough_obs, .25), quantile(p4$trough_obs, .75)),
+              sprintf("%.0f", median(p6$trough_obs)),
+              sprintf("%.1f", 100 * mean(p4$trough_obs < 1000)),
+              sprintf("%.1f", 100 * mean(p4$trough_obs >= w[1] & p4$trough_obs <= w[2])),
+              sprintf("%.0f", typ_trough),
+              sprintf("%.2f (%.2f)", mean(p4$trough_ratio), sd(p4$trough_ratio)),
+              sprintf("%.2f", median(p4$ratio_3to8h)),
+              sprintf("%.3f", cor(p4$trough, p4$AUC24, method = "spearman"))),
+    Published = c("879 [647-1170] (IRIS, Larson 2008, n = 351)",
+                  "1935 (TOPS, Guilhot 2012)",
+                  "64.6 (OPTIM-imatinib, Johnson-Ansah 2022; ~2 weeks of treatment)",
+                  "41.4 (real-world TDM, Huang 2023, n = 102)",
+                  "555-1388; grand median 870 across nine population models (Gotta 2013)",
+                  "0.27 (0.09) (IRIS, Larson 2008)",
+                  "0.17 (CV 74%) (le Coutre 2004)",
+                  "trough representative of overall exposure (IATDMCT, Clarke 2021)"),
+    check.names = FALSE)
+  write.csv(tab, file.path(DIRS$results, "external_consistency.csv"), row.names = FALSE)
+  tab
 }
 
 # ----------------------------------------------------------------------------
-# B7. Parameter-uncertainty propagation. Resample the population-typical values
-# (CL, Vc, ka, metabolite ratio, metabolite t1/2) from their reported relative
-# standard errors, rebuild a population, and recompute the headline metrics:
-#   - median steady-state parent trough at 400 mg
-#   - % of patients above the 1000 ng/mL target
-#   - % of patients tolerating 0 consecutive missed doses (parent criterion)
-# Efficient: only k = 0 (SS) and k = 1 simulations are needed for these metrics.
+# Run-in adequacy: trough just before the first perturbed dose, as % of the
+# true steady-state trough (taken after a very long run).
 # ----------------------------------------------------------------------------
-build_population_typ <- function(N, typ) {
-  wt  <- pmin(130, pmax(45, rnorm(N, COV$wt_mean, COV$wt_sd)))
-  sex_cl <- ifelse(rbinom(N, 1, COV$female_frac) == 1, COV$female_cl, 1)
-  cl <- typ["CL"] * (wt/COV$wt_ref)^COV$allo_CL * sex_cl * exp(rnorm(N, 0, PK$iiv_CL))
-  vc <- typ["Vc"] * (wt/COV$wt_ref)^COV$allo_V  * exp(rnorm(N, 0, PK$iiv_Vc))
-  ka <- typ["ka"] * exp(rnorm(N, 0, PK$iiv_ka))
-  vp <- PK$Vp * (wt/COV$wt_ref)^COV$allo_V
-  q  <- PK$Q  * (wt/COV$wt_ref)^COV$allo_CL
-  thalf <- typ["t_half"] * exp(rnorm(N, 0, MET$iiv_thalf))
-  ratio <- typ["ss_ratio"] * exp(rnorm(N, 0, MET$iiv_ratio))
-  kme <- log(2)/thalf; kf <- ratio * kme
-  data.frame(id = 1:N, ka, cl, vc, q, vp, kf, kme, rpf = MET$rpf_base)
+runin_adequacy <- function(pop, ss_days, dose_mg = 400, long_days = 100, label = "base") {
+  tau <- SIM$tau
+  ev <- shared_events((0:(long_days - 1)) * tau, dose_mg, c(ss_days * tau, long_days * tau) - 1e-6)
+  s <- solve_pop("base", pop[, MODEL_PARAMS$base], ev)[, .(id, time, Cp, Cm)]
+  a <- s[time < ss_days * tau]; b <- s[time > ss_days * tau]
+  m <- merge(a, b, by = "id", suffixes = c("_a", "_b"))
+  data.frame(label = label, run_in_days = ss_days,
+             parent_min_pct = 100 * min(m$Cp_a / m$Cp_b),
+             parent_median_pct = 100 * median(m$Cp_a / m$Cp_b),
+             metab_min_pct = 100 * min(m$Cm_a / m$Cm_b),
+             metab_p01_pct = 100 * unname(quantile(m$Cm_a / m$Cm_b, 0.01)),
+             metab_median_pct = 100 * median(m$Cm_a / m$Cm_b),
+             metab_thalf_max = max(pop$met_thalf))
 }
 
 # ----------------------------------------------------------------------------
-# Calibration-target sensitivity. The population central tendency of imatinib
-# trough is itself uncertain (IRIS population mean ~980 ng/mL, CV 54%, Larson
-# 2008; responder-subgroup means ~1450). We scale CL/F so the simulated MEDIAN
-# trough hits a range of targets and recompute the headline (% tolerating 0
-# missed doses), showing how sensitive the conclusion is to the calibration
-# anchor rather than only to parameter noise around a single anchor.
+# Calibration-anchor (exposure-headroom) sensitivity. CL/F is scaled so that
+# the simulated MEDIAN steady-state trough equals each anchor (root finding),
+# then the forgiveness analysis is repeated (k = 0..6).
 # ----------------------------------------------------------------------------
-run_calibration_sensitivity <- function(pop, dose_mg = 400, targets = CAL$targets) {
-  thr <- EFF$thr_parent
-  base_med <- median(simulate_missed(pop, 0, dose_mg) %>%
-                       filter(rpf == MET$rpf_base) %>% pull(nadir_parent))
-  out <- lapply(targets, function(tg) {
-    pp <- pop; pp$cl <- pop$cl * (base_med / tg)         # scale CL to hit target median trough
-    s0 <- simulate_missed(pp, 0, dose_mg) %>% filter(rpf == MET$rpf_base)
-    s1 <- simulate_missed(pp, 1, dose_mg) %>% filter(rpf == MET$rpf_base)
-    data.frame(target_trough = tg, dose_mg = dose_mg,
-               median_trough = median(s0$nadir_parent),
-               pct_above = 100 * mean(s0$nadir_parent >= thr),
-               pct_tol0  = 100 * mean(s1$nadir_parent < thr))
-  })
-  res <- bind_rows(out)
-  write.csv(res, file.path(DIRS$results, "calibration_sensitivity.csv"), row.names = FALSE)
-  res
+median_ss_trough <- function(pop, dose_mg) {
+  tau <- SIM$tau; ss <- SIM$ss_days
+  ev <- shared_events((0:(ss - 1)) * tau, dose_mg, seq((ss - 1) * tau, ss * tau, by = 0.25))
+  s <- solve_pop("base", pop[, MODEL_PARAMS$base], ev)[, .(id, Cp)]
+  median(s[, .(m = min(Cp)), by = id]$m)
+}
+run_calibration_anchors <- function(pop, dose_mg, targets) {
+  bind_rows(lapply(targets, function(tg) {
+    f <- function(lg) { pp <- pop; pp$cl <- pop$cl * exp(lg); log(median_ss_trough(pp, dose_mg) / tg) }
+    lg <- uniroot(f, c(-1.5, 1.5), tol = 1e-3)$root
+    pp <- pop; pp$cl <- pop$cl * exp(lg)
+    long <- run_forgiveness(pp, dose_mg, K = SIM$max_consec_sens, label = sprintf("anchor %g", tg), verbose = FALSE)
+    s <- summarise_forgiveness(long, label = sprintf("anchor_%g", tg))
+    s$anchor <- tg; s$cl_scale <- exp(lg)
+    s
+  }))
 }
 
-run_uncertainty <- function(dose_mg = 400, N = 300, reps = SIM$n_uncertainty) {
-  set.seed(SIM$seed + 99)
-  base <- c(CL = PK$CL, Vc = PK$Vc, ka = PK$ka, ss_ratio = MET$ss_ratio, t_half = MET$t_half)
-  rse  <- SIM$unc_rse[names(base)]
-  thr  <- EFF$thr_parent
-  res <- vector("list", reps)
-  for (i in seq_len(reps)) {
-    typ <- base * exp(rnorm(length(base), 0, rse))
-    pp  <- build_population_typ(N, typ)
-    s0  <- simulate_missed(pp, 0, dose_mg)   # SS
-    s1  <- simulate_missed(pp, 1, dose_mg)   # one missed dose
-    s0b <- s0[s0$rpf == MET$rpf_base, ]; s1b <- s1[s1$rpf == MET$rpf_base, ]
-    res[[i]] <- data.frame(
-      rep = i,
-      median_trough = median(s0b$nadir_parent),
-      pct_above = 100 * mean(s0b$nadir_parent >= thr),
-      pct_tol0  = 100 * mean(s1b$nadir_parent < thr)
-    )
-    if (i %% 50 == 0) cat(sprintf("    uncertainty rep %d/%d\n", i, reps))
+# ----------------------------------------------------------------------------
+# Parameter-uncertainty propagation (sourced RSEs; UNC table in 00_config.R).
+# Each replicate draws a typical-value vector, variances, covariance and weight
+# exponents, builds a population of SIM$n_unc_subjects patients and runs a
+# single-omission experiment (pre-omission trough = steady-state trough).
+# ----------------------------------------------------------------------------
+draw_unc <- function(stress = FALSE) {
+  u <- UNC; rse <- if (stress) u$stress_rse else u$rse
+  x <- setNames(numeric(nrow(u)), u$parameter)
+  for (i in seq_len(nrow(u))) {
+    x[i] <- if (u$distribution[i] == "log-normal") u$estimate[i] * exp(rnorm(1, 0, rse[i])) else
+      { v <- -1; while (v <= 0) v <- rnorm(1, u$estimate[i], rse[i] * u$estimate[i]); v }
   }
-  out <- bind_rows(res)
-  write.csv(out, file.path(DIRS$results, "uncertainty_replicates.csv"), row.names = FALSE)
-  summ <- data.frame(
-    Metric = c("Median SS trough (ng/mL)", "% above 1000 ng/mL target",
-               "% tolerating 0 missed doses"),
-    Median = c(median(out$median_trough), median(out$pct_above), median(out$pct_tol0)),
-    P2.5   = c(quantile(out$median_trough, .025), quantile(out$pct_above, .025), quantile(out$pct_tol0, .025)),
-    P97.5  = c(quantile(out$median_trough, .975), quantile(out$pct_above, .975), quantile(out$pct_tol0, .975))
-  )
-  write.csv(summ, file.path(DIRS$results, "uncertainty_summary.csv"), row.names = FALSE)
-  list(replicates = out, summary = summ)
+  x
+}
+build_population_unc <- function(N, th) {
+  wt <- pmin(130, pmax(45, rnorm(N, COV$wt_mean, COV$wt_sd)))
+  z1 <- rnorm(N); z2 <- rnorm(N); z3 <- rnorm(N); z4 <- rnorm(N); z5 <- rnorm(N)
+  om_cl <- sqrt(th["omega2_CL"]); om_v <- sqrt(th["omega2_V"])
+  r <- max(-0.99, min(0.99, th["cov_CL_V"] / (om_cl * om_v)))
+  wr <- wt / COV$wt_ref
+  cl <- th["CL"] * wr^th["allo_CL"] * exp(om_cl * z1)
+  vc <- th["Vc"] * wr^th["allo_V"] * exp(om_v * (r * z1 + sqrt(1 - r^2) * z2))
+  vp <- th["Vp"] * wr^th["allo_V"]
+  q  <- th["Q"]  * wr^th["allo_CL"]
+  ka <- th["ka"] * exp(PK$iiv_ka * z3)
+  ratio <- th["ss_ratio"] * exp(MET$iiv_ratio * z4)
+  thalf <- th["t_half"] * exp(MET$iiv_thalf * z5)
+  kme <- log(2) / thalf
+  data.frame(id = 1:N, ka, cl, vc, q, vp, kf = ratio * kme, kme, rpf = MET$rpf_base)
+}
+one_omission <- function(pp, dose_mg) {
+  tau <- SIM$tau; ss <- SIM$ss_days
+  days <- 1:(ss + 3); amt <- rep(dose_mg, length(days)); amt[ss + 1] <- 0
+  ev <- shared_events((days[amt > 0] - 1) * tau, dose_mg, seq((ss - 1) * tau, (ss + 2) * tau, by = 0.25))
+  s <- solve_pop("base", pp[, MODEL_PARAMS$base], ev)[, .(id, time, Cp, Cm)]
+  s[, .(ss_trough = min(Cp[time <= ss * tau]), nadir = min(Cp),
+        nadir_m05 = min(Cp + 0.5 * Cm), nadir_m10 = min(Cp + 1.0 * Cm),
+        ss_m05 = min((Cp + 0.5 * Cm)[time <= ss * tau])), by = id]
+}
+run_uncertainty <- function(stress = FALSE, reps = SIM$n_uncertainty, N = SIM$n_unc_subjects) {
+  set.seed(SIM$seed + if (stress) 199 else 99)
+  thr <- EFF$thr_parent
+  out <- vector("list", reps)
+  for (i in seq_len(reps)) {
+    th <- draw_unc(stress)
+    pp <- build_population_unc(N, th)
+    rows <- lapply(SIM$doses_mg, function(d) {
+      x <- one_omission(pp, d); at <- x$ss_trough >= thr
+      data.frame(rep = i, dose_mg = d, median_trough = median(x$ss_trough),
+                 pct_at_target = 100 * mean(at),
+                 cond_pct_lose_after1_parent = 100 * mean(x$nadir[at] < thr),
+                 cond_pct_lose_after1_moiety_r0.5 = 100 * mean(x$nadir_m05[at] < moiety_threshold(0.5, thr, th["ss_ratio"])),
+                 cond_pct_lose_after1_moiety_r1.0 = 100 * mean(x$nadir_m10[at] < moiety_threshold(1.0, thr, th["ss_ratio"])),
+                 all_pct_fail_after1_parent = 100 * mean(x$nadir < thr))
+    })
+    out[[i]] <- bind_rows(rows)
+    if (i %% 50 == 0) cat(sprintf("    uncertainty (%s) rep %d/%d\n", if (stress) "stress" else "sourced", i, reps))
+  }
+  rep_tab <- bind_rows(out)
+  summ <- rep_tab %>% group_by(dose_mg) %>%
+    summarise(across(-rep, list(median = median, p2.5 = ~quantile(.x, .025), p97.5 = ~quantile(.x, .975))),
+              .groups = "drop") %>% mutate(run = if (stress) "stress" else "sourced")
+  list(replicates = rep_tab %>% mutate(run = if (stress) "stress" else "sourced"), summary = summ)
 }

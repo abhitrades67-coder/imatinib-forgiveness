@@ -1,0 +1,468 @@
+Config loaded (v1.1.0): parent CL/F 10.5 L/h; weight exponents 0.301 / 0.405 ; CL-V correlation 0.707 ; metabolite t1/2 40 h; R 0.15 ; target 1000 ng/mL
+rxode2 models compiled: base, Michaelis-Menten formation, Menon-Andersen metabolite.
+Warning message:
+package 'ggplot2' was built under R version 4.5.3 
+
+[04:13:56 | 0.2 min] Virtual population (base case)
+                  Characteristic               Value
+1                    Age (years)          55 [46-63]
+2               Body weight (kg)          70 [61-79]
+3                     Female (%)                43.7
+4                     CL/F (L/h)     10.4 [8.5-13.1]
+5                       Vc/F (L)       159 [128-196]
+6                       Vp/F (L)       110 [104-115]
+7                      Q/F (L/h)          50 [48-52]
+8                       ka (1/h)    0.51 [0.39-0.68]
+9  Parent terminal half-life (h)    18.8 [16.0-21.6]
+10     Metabolite:parent ratio R 0.151 [0.124-0.182]
+11      Metabolite half-life (h)    40.1 [35.0-45.9]
+
+[04:13:56 | 0.2 min] Consistency checks against published exposure
+                                                        Metric  Simulated_400mg
+1                          Parent trough, median [IQR] (ng/mL)  1031 [764-1355]
+2  Parent trough with 26% residual error, median [IQR] (ng/mL)  1034 [729-1439]
+3                            Parent trough, mean (CV%) (ng/mL)       1111 (43%)
+4                          CGP74588 trough, mean (CV%) (ng/mL)        258 (46%)
+5                    Metabolite:parent trough ratio, mean (SD)   0.24 (SD 0.08)
+6        Metabolite:parent ratio 3-8 h post-dose, median [IQR] 0.12 [0.10-0.14]
+7                                   Cmax, median [IQR] (ng/mL) 2202 [1784-2662]
+8                                       Tmax, median [IQR] (h)    3.0 [2.5-3.8]
+9                              AUC0-24, median [IQR] (ug.h/mL) 38.4 [30.5-47.2]
+10                 Parent terminal half-life, median [IQR] (h) 18.8 [16.0-21.6]
+11                   Metabolite:parent AUC ratio, median [IQR] 0.15 [0.12-0.18]
+                                                                        Published_400mg
+1  IRIS: median 879 [647-1170], n = 351 (Larson 2008); TOPS: median 1200 (Guilhot 2012)
+2                                 IRIS: median 879 [647-1170] (measured concentrations)
+3                                                 IRIS: mean 979 (CV 54%) (Larson 2008)
+4                                                      IRIS: 242 (CV 44%) (Larson 2008)
+5                    IRIS: 0.27 (SD 0.09) (Larson 2008); TOPS ~0.20-0.25 (Guilhot 2012)
+6                                  0.17 (CV 74%), single samples 3-8 h (le Coutre 2004)
+7                                               1920-2040 (le Coutre 2004; Egorin 2009)
+8                                                         2-4 (prescribing information)
+9                                                   34-40 (Egorin 2009; le Coutre 2004)
+10                                                                18.2 (le Coutre 2004)
+11                                                      ~0.15 (prescribing information)
+    Simulated_600mg                                          Published_600mg
+1  1546 [1146-2032] TOPS: median 1935 at an actual 600 mg/day (Guilhot 2012)
+2  1518 [1092-2103]              TOPS: median 1935 (measured concentrations)
+3        1666 (43%)                                                        -
+4         387 (46%)                                                        -
+5    0.24 (SD 0.08)             TOPS: ~0.20-0.25 at all doses (Guilhot 2012)
+6  0.12 [0.10-0.14]                                                        -
+7  3303 [2676-3994]                                                        -
+8     3.0 [2.5-3.8]                                                        -
+9  57.5 [45.8-70.7]                                                        -
+10 18.8 [16.0-21.6]                                                        -
+11 0.15 [0.12-0.18]                                                        -
+                                                            Check
+1 Median [IQR] parent trough, 400 mg, with residual error (ng/mL)
+2       Median parent trough, 600 mg, with residual error (ng/mL)
+3                         Patients below 1000 ng/mL on 400 mg (%)
+4                    Patients within 860-1500 ng/mL on 400 mg (%)
+5                   Typical-patient parent trough, 400 mg (ng/mL)
+6               Metabolite:parent trough ratio, 400 mg, mean (SD)
+7         Metabolite:parent ratio 3-8 h post-dose, 400 mg, median
+8   Spearman correlation, steady-state trough vs AUC0-24 (400 mg)
+            Model
+1 1034 [729-1439]
+2            1518
+3            46.6
+4            42.7
+5            1019
+6     0.24 (0.08)
+7            0.12
+8           0.982
+                                                              Published
+1                           879 [647-1170] (IRIS, Larson 2008, n = 351)
+2                                             1935 (TOPS, Guilhot 2012)
+3      64.6 (OPTIM-imatinib, Johnson-Ansah 2022; ~2 weeks of treatment)
+4                            41.4 (real-world TDM, Huang 2023, n = 102)
+5 555-1388; grand median 870 across nine population models (Gotta 2013)
+6                                       0.27 (0.09) (IRIS, Larson 2008)
+7                                        0.17 (CV 74%) (le Coutre 2004)
+8      trough representative of overall exposure (IATDMCT, Clarke 2021)
+
+[04:13:57 | 0.2 min] Run-in adequacy
+    label run_in_days parent_min_pct parent_median_pct metab_min_pct
+1    base          21       99.99389               100      98.74342
+2 thalf90          21       99.99389               100      86.05214
+3 thalf90          35       99.99999               100      96.57015
+  metab_p01_pct metab_median_pct metab_thalf_max
+1      99.46844         99.97191        74.19791
+2      90.40485         97.52762       166.94531
+3      98.12502         99.81388       166.94531
+
+[04:14:00 | 0.2 min] Base case: individual missed-dose experiments
+    [base] 400 mg: 0 consecutive dose(s) omitted
+    [base] 400 mg: 1 consecutive dose(s) omitted
+    [base] 400 mg: 2 consecutive dose(s) omitted
+    [base] 400 mg: 3 consecutive dose(s) omitted
+    [base] 400 mg: 4 consecutive dose(s) omitted
+    [base] 400 mg: 5 consecutive dose(s) omitted
+    [base] 400 mg: 6 consecutive dose(s) omitted
+    [base] 400 mg: 7 consecutive dose(s) omitted
+    [base] 400 mg: 8 consecutive dose(s) omitted
+    [base] 400 mg: 9 consecutive dose(s) omitted
+    [base] 400 mg: 10 consecutive dose(s) omitted
+    [base] 600 mg: 0 consecutive dose(s) omitted
+    [base] 600 mg: 1 consecutive dose(s) omitted
+    [base] 600 mg: 2 consecutive dose(s) omitted
+    [base] 600 mg: 3 consecutive dose(s) omitted
+    [base] 600 mg: 4 consecutive dose(s) omitted
+    [base] 600 mg: 5 consecutive dose(s) omitted
+    [base] 600 mg: 6 consecutive dose(s) omitted
+    [base] 600 mg: 7 consecutive dose(s) omitted
+    [base] 600 mg: 8 consecutive dose(s) omitted
+    [base] 600 mg: 9 consecutive dose(s) omitted
+    [base] 600 mg: 10 consecutive dose(s) omitted
+# A tibble: 9 × 7
+  criterion                  k median    q1    q3   p10   p90
+  <chr>                  <int>  <dbl> <dbl> <dbl> <dbl> <dbl>
+1 Active moiety, RPF 0.5     1   2.12  1.92  2.39  1.77  2.65
+2 Active moiety, RPF 0.5     2   4.47  3.73  5.52  3.22  6.67
+3 Active moiety, RPF 0.5     3   8.92  7.04 11.5   5.76 14.6 
+4 Active moiety, RPF 1.0     1   1.92  1.74  2.13  1.61  2.34
+5 Active moiety, RPF 1.0     2   3.72  3.16  4.37  2.77  5.14
+6 Active moiety, RPF 1.0     3   6.75  5.52  8.34  4.66 10.3 
+7 Parent                     1   2.43  2.16  2.83  1.97  3.28
+8 Parent                     2   5.89  4.67  8.00  3.86 10.7 
+9 Parent                     3  14.3  10.1  22.6   7.60 35.2 
+                                          [,1]       [,2]
+dose_mg                             400.000000 600.000000
+pct_at_target                        52.700000  84.300000
+cond_pct_lose_after1_parent          87.476281  75.919336
+cond_pct_gain_ge1_r0.1                1.138520   2.609727
+cond_pct_gain_ge1_r0.5                4.933586  11.387900
+cond_pct_gain_ge1_r1.0               11.195446  21.470937
+all_pct_fail_after1_parent           93.400000  79.700000
+cond_mean_excess_tb_parent_168       16.144312  10.628827
+cond_mean_excess_tb_moiety_r0.5_168  13.880655   8.721425
+cond_median_deficit_parent_168       14.222625  14.245952
+cond_median_deficit_moiety_r0.5_168  14.099560  14.128249
+
+[04:15:37 | 1.9 min] Adherence patterns
+  pattern 400 mg / perfect ...
+  pattern 400 mg / moderate ...
+  pattern 400 mg / poor ...
+  pattern 400 mg / weekend ...
+  pattern 400 mg / delayed ...
+  pattern 400 mg / stoch_80_independent ...
+  pattern 400 mg / stoch_80_clustered ...
+  pattern 400 mg / stoch_40_independent ...
+  pattern 400 mg / stoch_40_clustered ...
+  pattern 600 mg / perfect ...
+  pattern 600 mg / moderate ...
+  pattern 600 mg / poor ...
+  pattern 600 mg / weekend ...
+  pattern 600 mg / delayed ...
+  pattern 600 mg / stoch_80_independent ...
+  pattern 600 mg / stoch_80_clustered ...
+  pattern 600 mg / stoch_40_independent ...
+  pattern 600 mg / stoch_40_clustered ...
+    dose_mg             scenario     n adherence median_trough     pi_lo
+      <num>               <char> <int>     <num>         <num>     <num>
+ 1:     400              perfect  1000 100.00000     1030.7040 439.18051
+ 2:     400             moderate  1000  80.00000      738.2915 297.94042
+ 3:     400                 poor  1000  40.00000      301.7398 113.37024
+ 4:     400              weekend  1000  73.33333      649.2761 267.23784
+ 5:     400              delayed  1000 100.00000     1013.8656 425.44462
+ 6:     400 stoch_80_independent  1000  80.04333      727.9818 288.43655
+ 7:     400   stoch_80_clustered  1000  79.47333      746.4534 291.38654
+ 8:     400 stoch_40_independent  1000  39.87667      277.9485  78.64131
+ 9:     400   stoch_40_clustered  1000  39.52333      319.4468  67.00048
+10:     600              perfect  1000 100.00000     1546.0560 658.77076
+11:     600             moderate  1000  80.00000     1107.4372 446.91062
+12:     600                 poor  1000  40.00000      452.6097 170.05536
+13:     600              weekend  1000  73.33333      973.9141 400.85676
+14:     600              delayed  1000 100.00000     1520.7984 638.16693
+15:     600 stoch_80_independent  1000  80.04333     1091.9726 432.65483
+16:     600   stoch_80_clustered  1000  79.47333     1119.6801 437.07981
+17:     600 stoch_40_independent  1000  39.87667      416.9227 117.96196
+18:     600   stoch_40_clustered  1000  39.52333      479.1703 100.50073
+        pi_hi median_trough_metab pct_ge_target cond_pct_days_below_parent
+        <num>               <num>         <num>                      <num>
+ 1: 2273.0367           235.97530          52.7                   0.000000
+ 2: 1701.0771           189.57547          24.2                  45.237192
+ 3:  765.3547           100.78561           0.7                  89.671094
+ 4: 1497.6217           168.98189          15.2                  52.352941
+ 5: 2255.7125           234.57172          51.6                   5.819102
+ 6: 1727.5699           185.14558          24.1                  42.080961
+ 7: 1790.8129           186.35523          26.8                  34.016445
+ 8:  820.5363            97.48961           1.0                  89.335863
+ 9:  977.8238            94.29463           2.3                  78.583175
+10: 3409.5550           353.96295          84.3                   0.000000
+11: 2551.6157           284.36320          57.7                  33.594306
+12: 1148.0321           151.17842           4.7                  81.202056
+13: 2246.4326           253.47283          48.2                  42.336892
+14: 3383.5687           351.85758          83.0                   3.384737
+15: 2591.3548           277.71837          56.6                  33.997628
+16: 2686.2194           279.53284          59.2                  28.924476
+17: 1230.8045           146.23441           5.4                  83.013049
+18: 1466.7357           141.44194          10.6                  73.005140
+    cond_pct_time_below_parent cond_pct_time_below_moiety_r0.5
+                         <num>                           <num>
+ 1:                  0.0000000                       0.0000000
+ 2:                 13.6058329                      12.0567446
+ 3:                 61.2009092                      61.0279399
+ 4:                 24.0228068                      22.8196342
+ 5:                  0.6495388                       0.3819326
+ 6:                 16.4916345                      15.4010073
+ 7:                 18.9295919                      18.3329963
+ 8:                 61.4037651                      61.0836683
+ 9:                 59.7379919                      59.4189451
+10:                  0.0000000                       0.0000000
+11:                  8.9913162                       7.5954180
+12:                 51.7289997                      50.7194760
+13:                 18.6572732                      17.2267278
+14:                  0.3679584                       0.2075208
+15:                 12.2286030                      11.0707478
+16:                 15.9510296                      15.2037991
+17:                 52.4102407                      51.3935589
+18:                 54.8417694                      54.0467734
+    cond_pct_time_below_moiety_r1.0 cond_median_deficit_parent
+                              <num>                      <num>
+ 1:                       0.0000000                 0.00000000
+ 2:                      10.7563780                18.37517328
+ 3:                      60.8593689                57.29689132
+ 4:                      21.7116312                26.18080674
+ 5:                       0.2467632                 0.09846408
+ 6:                      14.4578812                19.48026393
+ 7:                      17.8082315                18.66740907
+ 8:                      60.8305459                58.42639895
+ 9:                      59.1357094                58.45367233
+10:                       0.0000000                 0.00000000
+11:                       6.4808560                18.49435425
+12:                      49.7372434                57.57071244
+13:                      15.9096229                26.27976210
+14:                       0.1267690                 0.08449323
+15:                      10.1004936                19.72947243
+16:                      14.5310539                19.11430069
+17:                      50.4574099                58.40485424
+18:                      53.3086482                59.32128224
+    all_pct_time_below_parent
+                        <num>
+ 1:                 14.834835
+ 2:                 31.971398
+ 3:                 71.489196
+ 4:                 40.010659
+ 5:                 15.324608
+ 6:                 33.386801
+ 7:                 33.626273
+ 8:                 71.876693
+ 9:                 69.228569
+10:                  2.755557
+11:                 13.742161
+12:                 55.263421
+13:                 22.818106
+14:                  3.229466
+15:                 16.367031
+16:                 19.353495
+17:                 55.907734
+18:                 57.426451
+
+[04:17:46 | 4.0 min] Omission behaviours (late intake, doubling)
+   dose_mg                  behaviour cond_pct_lose_target_parent
+1      400        Omitted (base case)                    87.47628
+2      400             Taken 6 h late                    34.72486
+3      400            Taken 12 h late                    64.89564
+4      400            Taken 18 h late                    79.31689
+5      400 Omitted, next dose doubled                    87.47628
+6      600        Omitted (base case)                    75.91934
+7      600             Taken 6 h late                    20.87782
+8      600            Taken 12 h late                    41.63701
+9      600            Taken 18 h late                    59.31198
+10     600 Omitted, next dose doubled                    75.91934
+   cond_median_nadir_pct_of_ss cond_mean_excess_tb_parent_168
+1                     45.74810                      16.144312
+2                     82.24180                       1.123977
+3                     67.63727                       4.286793
+4                     55.62622                       8.732206
+5                     45.74810                      13.654643
+6                     42.73642                      10.628827
+7                     80.85358                       0.630820
+8                     65.37307                       2.593287
+9                     52.85651                       5.721663
+10                    42.73642                       9.786768
+   cond_median_deficit_parent_168 median_peak_pct_of_ss_cmax p95_peak_ng_ml
+1                    14.222624854                   100.0000       3470.564
+2                     0.007250883                   106.1682       3652.434
+3                     0.023058744                   113.8624       3830.550
+4                     0.042713828                   123.2748       4048.315
+5                     0.067194127                   133.0600       4428.998
+6                    14.245951833                   100.0000       5205.846
+7                     0.001839825                   106.1682       5478.651
+8                     0.013178091                   113.8624       5745.825
+9                     0.027006884                   123.2748       6072.475
+10                    0.044346348                   133.0600       6643.498
+   cond_pct_lose_target_moiety_r0.5 cond_pct_lose_target_moiety_r1.0
+1                          83.30171                         78.55787
+2                          25.80645                         18.21632
+3                          55.21822                         47.05882
+4                          73.24478                         67.17268
+5                          83.30171                         78.55787
+6                          67.49703                         59.78648
+7                          15.89561                         10.43891
+8                          34.40095                         27.52076
+9                          51.00830                         44.24674
+10                         67.49703                         59.78648
+
+[04:18:02 | 4.3 min] Sensitivity analyses (structure, kinetics, variability, interactions)
+  [thalf20] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 3.2% / 8.0%
+  [thalf20] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 7.6% / 13.9%
+  [thalf90] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 7.0% / 15.0%
+  [thalf90] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 13.6% / 30.2%
+  [ratio025] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 9.1% / 20.1%
+  [ratio025] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 17.9% / 36.5%
+  [formlim] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 0.4% / 0.9%
+  [formlim] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 2.0% / 2.8%
+  [ma015] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 1.5% / 2.5%
+  [ma015] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 3.4% / 6.6%
+  [ma025] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 2.5% / 4.4%
+  [ma025] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 5.6% / 10.0%
+  [mm_unbound] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 5.3% / 11.6%
+  [mm_unbound] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 11.2% / 21.4%
+  [mm_total] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 7.4% / 16.3%
+  [mm_total] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 10.9% / 22.3%
+  [submitted] 400 mg: at target 55.7%, conditional loss after 1 78.1%, gain>=1 (RPF 0.5/1.0) 6.5% / 15.6%
+  [submitted] 600 mg: at target 83.1%, conditional loss after 1 63.1%, gain>=1 (RPF 0.5/1.0) 10.8% / 23.7%
+  [base_qvp] 400 mg: at target 53.2%, conditional loss after 1 87.0%, gain>=1 (RPF 0.5/1.0) 3.6% / 11.3%
+  [base_qvp] 600 mg: at target 83.2%, conditional loss after 1 73.0%, gain>=1 (RPF 0.5/1.0) 10.1% / 20.8%
+  [iov28] 400 mg: at target 41.5%, conditional loss after 1 83.1%, gain>=1 (RPF 0.5/1.0) 7.0% / 14.5%
+  [iov28] 600 mg: at target 74.0%, conditional loss after 1 70.9%, gain>=1 (RPF 0.5/1.0) 11.1% / 23.1%
+  [iov44] 400 mg: at target 35.3%, conditional loss after 1 79.0%, gain>=1 (RPF 0.5/1.0) 9.1% / 18.4%
+  [iov44] 600 mg: at target 65.6%, conditional loss after 1 67.5%, gain>=1 (RPF 0.5/1.0) 12.0% / 25.5%
+  [metiiv0] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 5.7% / 9.5%
+  [metiiv0] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 10.9% / 21.6%
+  [metiiv2] 400 mg: at target 52.7%, conditional loss after 1 87.5%, gain>=1 (RPF 0.5/1.0) 6.5% / 16.3%
+  [metiiv2] 600 mg: at target 84.3%, conditional loss after 1 75.9%, gain>=1 (RPF 0.5/1.0) 13.2% / 25.9%
+  [ddi_inducer] 400 mg: at target 0.0%, conditional loss after 1 NaN%, gain>=1 (RPF 0.5/1.0) NaN% / NaN%
+  [ddi_inducer] 600 mg: at target 0.0%, conditional loss after 1 NaN%, gain>=1 (RPF 0.5/1.0) NaN% / NaN%
+  [ddi_inhibitor] 400 mg: at target 89.1%, conditional loss after 1 54.7%, gain>=1 (RPF 0.5/1.0) 11.8% / 21.8%
+  [ddi_inhibitor] 600 mg: at target 99.1%, conditional loss after 1 31.4%, gain>=1 (RPF 0.5/1.0) 18.8% / 37.8%
+
+[04:29:31 | 15.7 min] Calibration-anchor sensitivity
+   dose_mg anchor median_ss_trough pct_at_target cond_pct_lose_after1_parent
+1      400    860         859.9533          36.9                    92.68293
+2      400    980         980.0017          48.5                    90.10309
+3      400   1120        1120.3772          59.4                    83.83838
+4      400   1300        1299.5974          72.5                    77.24138
+5      400   1450        1450.1090          81.7                    69.03305
+6      600   1290        1289.9300          71.4                    85.43417
+7      600   1470        1470.0026          81.6                    79.53431
+8      600   1680        1680.5657          88.4                    67.87330
+9      600   1950        1949.3972          95.4                    54.82180
+10     600   2175        2175.1636          97.0                    43.60825
+   all_pct_fail_after1_parent cond_pct_gain_ge1_r0.5 cond_pct_gain_ge1_r1.0
+1                        97.3               2.439024                7.04607
+2                        95.2               5.154639               11.75258
+3                        90.4               5.555556               12.62626
+4                        83.5               8.689655               18.62069
+5                        74.7              10.893513               22.88862
+6                        89.6               7.002801               15.26611
+7                        83.3              10.294118               20.22059
+8                        71.6              11.764706               25.11312
+9                        56.9              13.417191               26.93920
+10                       45.3              15.876289               31.13402
+
+[04:32:36 | 18.8 min] Parameter-uncertainty propagation (sourced RSEs; 25% stress)
+    uncertainty (sourced) rep 50/200
+    uncertainty (sourced) rep 100/200
+    uncertainty (sourced) rep 150/200
+    uncertainty (sourced) rep 200/200
+    uncertainty (stress) rep 50/200
+    uncertainty (stress) rep 100/200
+    uncertainty (stress) rep 150/200
+    uncertainty (stress) rep 200/200
+  dose_mg median_trough_median median_trough_p2.5 median_trough_p97.5
+1     400             1050.523           838.0306            1270.845
+2     600             1575.785          1257.0459            1906.267
+3     400             1029.929           768.0208            1302.084
+4     600             1544.893          1152.0311            1953.126
+  pct_at_target_median pct_at_target_p2.5 pct_at_target_p97.5
+1             54.50000           33.99167            70.66667
+2             86.00000           71.30000            96.01667
+3             52.50000           31.29167            75.67500
+4             84.33333           62.99167            96.00000
+  cond_pct_lose_after1_parent_median cond_pct_lose_after1_parent_p2.5
+1                           87.07792                         74.19896
+2                           73.42834                         55.13529
+3                           87.74263                         67.86946
+4                           74.54852                         46.24788
+  cond_pct_lose_after1_parent_p97.5 cond_pct_lose_after1_moiety_r0.5_median
+1                          97.28444                                82.52907
+2                          88.56045                                65.79165
+3                          98.65434                                83.81503
+4                          91.99904                                67.91258
+  cond_pct_lose_after1_moiety_r0.5_p2.5 cond_pct_lose_after1_moiety_r0.5_p97.5
+1                              67.31910                               95.00176
+2                              47.68032                               82.21442
+3                              62.28972                               96.19312
+4                              40.10707                               86.84035
+  cond_pct_lose_after1_moiety_r1.0_median cond_pct_lose_after1_moiety_r1.0_p2.5
+1                                77.47178                              61.38374
+2                                58.31303                              40.55888
+3                                78.36700                              56.69934
+4                                61.03056                              33.56150
+  cond_pct_lose_after1_moiety_r1.0_p97.5 all_pct_fail_after1_parent_median
+1                               91.34678                          93.16667
+2                               77.42573                          77.66667
+3                               92.60924                          93.66667
+4                               81.50237                          79.00000
+  all_pct_fail_after1_parent_p2.5 all_pct_fail_after1_parent_p97.5     run
+1                        82.98333                         98.67500 sourced
+2                        58.65000                         91.00833 sourced
+3                        76.98333                         99.66667  stress
+4                        49.62500                         95.00000  stress
+
+[04:34:33 | 20.8 min] Benchmark against published parent-metabolite models
+                   model ss_trough_parent ss_trough_metab trough_ratio
+1 This study (base case)        1018.6743        232.2154    0.2279585
+2    Menon-Andersen 2009         975.2889        251.7020    0.2580795
+3          Delbaldo 2006        1191.9734        301.5938    0.2530206
+4            Petain 2008        1198.0281        286.9549    0.2395227
+  auc_ratio parent_nadir_after1_pct metab_nadir_after1_pct
+1 0.1499584                40.64315               78.51791
+2 0.2229795                40.14485               55.52115
+3 0.2472899                32.02762               32.02762
+4 0.2307220                36.72850               36.72850
+  parent_nadir_after2_pct metab_nadir_after2_pct apparent_t12_parent_day2
+1                16.51869               58.48461                 18.47695
+2                16.11609               34.73501                 18.22720
+3                10.25769               10.25769                 14.61088
+4                13.48982               13.48982                 16.60867
+  apparent_t12_metab_day2 moiety_rel_gain_after1_rpf0.5
+1                75.75121                  9.981870e+00
+2                28.21948                  4.377602e+00
+3                14.61088                  0.000000e+00
+4                16.60867                  2.935496e-09
+  moiety_rel_gain_after1_rpf1.0 moiety_rel_gain_after2_rpf1.0
+1                  1.811070e+01                  4.750546e+01
+2                  7.857194e+00                  2.369956e+01
+3                  2.220446e-14                  2.220446e-14
+4                  5.303713e-09                  5.303713e-09
+
+[04:34:34 | 20.8 min] Individualized-threshold check
+   dose_mg   rpf cond_pct_gain_ge1_population cond_pct_gain_ge1_individualized
+     <int> <num>                        <num>                            <num>
+1:     400   0.1                     1.138520                         1.138520
+2:     600   0.1                     2.609727                         2.253855
+3:     400   0.5                     4.933586                         5.313093
+4:     600   0.5                    11.387900                        10.794781
+5:     400   1.0                    11.195446                        10.815939
+6:     600   1.0                    21.470937                        21.115065
+     delta_pp
+        <num>
+1:  0.0000000
+2:  0.3558719
+3: -0.3795066
+4:  0.5931198
+5:  0.3795066
+6:  0.3558719
+
+[04:34:34 | 20.8 min] Figures
+
+[04:34:55 | 21.1 min] Numbers file
+  6348 numbers written
+
+[04:34:56 | 21.2 min] Done. Results in results/, figures in figures/
+EXIT CODE: 0

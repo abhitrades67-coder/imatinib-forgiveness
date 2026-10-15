@@ -1,9 +1,9 @@
 {
   "title": "Metabolite-aware pharmacokinetic forgiveness analysis of imatinib in chronic myeloid leukemia: analysis code and simulated result datasets",
-  "description": "<p>Analysis code and generated result datasets for a metabolite-aware pharmacokinetic simulation of missed imatinib doses in chronic myeloid leukemia. A two-compartment parent model coupled to a long-lived active metabolite (N-desmethyl-imatinib, CGP74588) is used to test whether the metabolite increases imatinib's forgiveness of missed doses at 400 and 600 mg once daily.</p><p>The analysis is fully deterministic under a fixed random seed (20260606): <code>Rscript R/run_all.R</code> regenerates every reported value, every figure and the journal artwork byte-for-byte.</p>",
+  "description": "<p>Analysis code and generated result datasets for a metabolite-aware pharmacokinetic simulation of missed imatinib doses in chronic myeloid leukemia. A literature-assembled two-compartment parent model coupled to the active metabolite N-desmethyl-imatinib (CGP74588) is used to test whether the metabolite increases imatinib's pharmacokinetic forgiveness of missed doses at 400 and 600 mg once daily.</p><p>Version 1.1.0 (revision in response to peer review) makes the analysis restricted to patients at target primary, adds trajectory-based endpoints and exposure headroom, benchmarks the framework against three published parent-metabolite population models, and extends the sensitivity analyses (metabolite structure and half-life, saturable formation, variability, late intake, random adherence, target sweep, sourced parameter uncertainty). Version 1.0.0 reproduces the originally submitted analysis.</p><p>The analysis is fully deterministic under fixed random seeds: <code>Rscript R/run_all.R</code> regenerates every reported value, table and figure.</p>",
   "upload_type": "software",
   "license": "mit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "language": "eng",
   "keywords": [
     "imatinib",

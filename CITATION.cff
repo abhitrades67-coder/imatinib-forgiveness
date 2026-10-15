@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this software or the archived result datasets, please cite the deposit below."
 title: "Metabolite-aware pharmacokinetic forgiveness analysis of imatinib in chronic myeloid leukemia: analysis code and simulated result datasets"
-version: 1.0.0
+version: 1.1.0
 license: MIT
 type: software
 year: 2026
-doi: 10.5281/zenodo.21899206
+doi: 10.5281/zenodo.21899205   # concept DOI (resolves to the newest version); v1.0.0 = 10.5281/zenodo.21899206
 repository-code: "https://github.com/abhitrades67-coder/imatinib-forgiveness"
-# Author names are given in the same form as reference [23] of the accompanying
+# Author names are given in the same form as the Zenodo reference of the accompanying
 # article, and match the Zenodo record's creator metadata.
 authors:
   - given-names: "Abhishek"
@@ -36,8 +36,10 @@ abstract: >-
   leukemia. A two-compartment parent model coupled to a long-lived active
   metabolite (N-desmethyl-imatinib, CGP74588) is used to test whether the
   metabolite increases imatinib's forgiveness of missed doses at 400 and
-  600 mg once daily. Running Rscript R/run_all.R regenerates every reported
-  value and figure.
+  600 mg once daily. Version 1.1.0 (response to peer review) adds conditional
+  and trajectory-based endpoints, published-model benchmarks and extended
+  sensitivity analyses. Running Rscript R/run_all.R regenerates every reported
+  value, table and figure.
 keywords:
   - imatinib
   - CGP74588
